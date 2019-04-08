@@ -9,7 +9,10 @@ const OPERATORS: {[c: string]: TokenType} = {
   '=': TokenType.EQ,
   '(': TokenType.LPAREN,
   ')': TokenType.RPAREN,
+  '++': TokenType.INC,
 };
+
+const OPERATORS_CHARS = new Set(Object.keys(OPERATORS).join(''));
 
 const KEYWORDS: {
   [c: string]: TokenType | [TokenType, number | string | boolean];
@@ -49,7 +52,7 @@ class Lexer {
       const current = this.peek();
       if (isDigit(current)) {
         this.tokenizeNumber();
-      } else if (current in OPERATORS) {
+      } else if (OPERATORS_CHARS.has(current)) {
         this.tokenizeOperator();
       } else if (current === '"') {
         this.tokenizeString();
@@ -86,9 +89,13 @@ class Lexer {
   }
 
   private tokenizeOperator() {
-    const operator = this.peek();
+    let operator = '';
+    let current = this.peek();
+    while (OPERATORS[operator + current] && current) {
+      operator += current;
+      current = this.next();
+    }
     this.addToken(OPERATORS[operator], null);
-    this.next();
   }
 
   private tokenizeString() {

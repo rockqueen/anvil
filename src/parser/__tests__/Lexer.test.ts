@@ -2,8 +2,8 @@ import Token, {TokenType} from '../Token';
 import Lexer from '../Lexer';
 
 it('always creates EOF token', () => {
-  const tokens = new Lexer('x = 1').tokenize();
-  expect(tokens[tokens.length - 1]).toEqual(new Token(TokenType.EOF, null));
+  const tokens = new Lexer('').tokenize();
+  expect(tokens[0]).toEqual(new Token(TokenType.EOF, null));
 });
 
 it('tokenizes string', () => {
@@ -25,8 +25,9 @@ it('tokenizes boolean', () => {
 });
 
 it('tokenizes operators', () => {
-  const tokens = new Lexer('+=').tokenize();
-  expect(tokens.length).toEqual(3);
+  const tokens = new Lexer('+= ++').tokenize();
+  expect(tokens.length).toEqual(4);
   expect(tokens[0]).toEqual(new Token(TokenType.PLUS, null));
   expect(tokens[1]).toEqual(new Token(TokenType.EQ, null));
+  expect(tokens[2]).toEqual(new Token(TokenType.INC, null));
 });

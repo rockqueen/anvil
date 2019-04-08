@@ -2,6 +2,7 @@
 export const enum TokenType {
   NUMBER, BOOLEAN, STRING, ID,
   PLUS, MINUS, STAR, SLASH, EQ,
+  INC,
   LPAREN, RPAREN,
   LET,
   EOF,
