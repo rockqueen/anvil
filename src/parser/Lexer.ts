@@ -111,11 +111,9 @@ class Lexer {
     }
     if (word in KEYWORDS) {
       const keyword = KEYWORDS[word];
-      if (Array.isArray(keyword)) {
-        this.addToken(keyword[0], keyword[1]);
-      } else {
-        this.addToken(keyword, null);
-      }
+      const type = Array.isArray(keyword) ? keyword[0] : keyword;
+      const value = Array.isArray(keyword) ? keyword[1] : null;
+      this.addToken(type, value);
     } else {
       this.addToken(TokenType.ID, word);
     }
