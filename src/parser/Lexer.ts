@@ -16,8 +16,8 @@ const KEYWORDS: {[c: string]: TokenType} = {
 };
 
 class Lexer {
-  private input: string;
-  private length: number;
+  private readonly input: string;
+  private readonly length: number;
   private pos: number = 0;
   private tokens: Array<Token> = [];
 
