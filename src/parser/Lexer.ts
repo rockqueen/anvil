@@ -11,10 +11,12 @@ const OPERATORS: {[c: string]: TokenType} = {
   ')': TokenType.RPAREN,
 };
 
-const KEYWORDS: {[c: string]: TokenType} = {
+const KEYWORDS: {
+  [c: string]: TokenType | [TokenType, number | string | boolean];
+} = {
   let: TokenType.LET,
-  true: TokenType.BOOLEAN,
-  false: TokenType.BOOLEAN,
+  true: [TokenType.BOOLEAN, true],
+  false: [TokenType.BOOLEAN, false],
 };
 
 class Lexer {
@@ -108,8 +110,12 @@ class Lexer {
       current = this.next();
     }
     if (word in KEYWORDS) {
-      const value = word === 'true' ? true : word === 'false' ? false : null;
-      this.addToken(KEYWORDS[word], value);
+      const keyword = KEYWORDS[word];
+      if (Array.isArray(keyword)) {
+        this.addToken(keyword[0], keyword[1]);
+      } else {
+        this.addToken(keyword, null);
+      }
     } else {
       this.addToken(TokenType.ID, word);
     }
