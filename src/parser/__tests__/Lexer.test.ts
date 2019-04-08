@@ -18,6 +18,12 @@ it('tokenizes numbers', () => {
   expect(hex[0]).toEqual(new Token(TokenType.NUMBER, 170));
 });
 
+it('tokenizes boolean', () => {
+  const tokens = new Lexer('true false').tokenize();
+  expect(tokens[0]).toEqual(new Token(TokenType.BOOLEAN, true));
+  expect(tokens[1]).toEqual(new Token(TokenType.BOOLEAN, false));
+});
+
 it('tokenizes operators', () => {
   const tokens = new Lexer('+=').tokenize();
   expect(tokens.length).toEqual(3);

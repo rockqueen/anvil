@@ -1,17 +1,18 @@
 // prettier-ignore
 export const enum TokenType {
-  NUMBER, STRING, ID,
+  NUMBER, BOOLEAN, STRING, ID,
   PLUS, MINUS, STAR, SLASH, EQ,
   LPAREN, RPAREN,
   LET,
-  EOF
+  EOF,
 }
 
 // prettier-ignore
 export type TokenValue<T> = 
   T extends TokenType.NUMBER ? number :
+  T extends TokenType.BOOLEAN ? boolean :
   T extends (TokenType.STRING | TokenType.ID) ? string :
-  null
+  null;
 
 class Token<T extends TokenType = TokenType> {
   constructor(private type: T, private value: TokenValue<T>) {}

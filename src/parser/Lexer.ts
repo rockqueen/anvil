@@ -13,6 +13,8 @@ const OPERATORS: {[c: string]: TokenType} = {
 
 const KEYWORDS: {[c: string]: TokenType} = {
   let: TokenType.LET,
+  true: TokenType.BOOLEAN,
+  false: TokenType.BOOLEAN,
 };
 
 class Lexer {
@@ -106,7 +108,8 @@ class Lexer {
       current = this.next();
     }
     if (word in KEYWORDS) {
-      this.addToken(KEYWORDS[word], null);
+      const value = word === 'true' ? true : word === 'false' ? false : null;
+      this.addToken(KEYWORDS[word], value);
     } else {
       this.addToken(TokenType.ID, word);
     }
