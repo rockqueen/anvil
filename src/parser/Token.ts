@@ -15,16 +15,14 @@ export type TokenValue<T> =
   T extends (TokenType.STRING | TokenType.ID) ? string :
   null;
 
-class Token<T extends TokenType = TokenType> {
-  constructor(private type: T, private value: TokenValue<T>) {}
+export type Token<T extends TokenType = TokenType> = {
+  readonly type: T;
+  readonly value: TokenValue<T>;
+};
 
-  public getType(): T {
-    return this.type;
-  }
-
-  public getValue(): TokenValue<T> {
-    return this.value;
-  }
+export function createToken<T extends TokenType>(
+  type: T,
+  value: TokenValue<T>
+): Token<T> {
+  return {type, value};
 }
-
-export default Token;

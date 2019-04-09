@@ -1,4 +1,4 @@
-import Token, {TokenType, TokenValue} from './Token';
+import {Token, TokenType, TokenValue, createToken} from './Token';
 import {isDigit, isHexDigit, isLetter} from './Utils';
 
 const OPERATORS: {[c: string]: TokenType} = {
@@ -44,7 +44,7 @@ class Lexer {
   }
 
   private addToken<T extends TokenType>(type: T, value: TokenValue<T>) {
-    this.tokens.push(new Token(type, value));
+    this.tokens.push(createToken(type, value));
   }
 
   public tokenize(): Array<Token> {
