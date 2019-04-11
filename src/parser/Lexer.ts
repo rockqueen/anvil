@@ -1,4 +1,4 @@
-import {isDigit, isHexDigit, isLetter} from './Utils';
+import {isDigit, isLetter} from './Utils';
 import {
   Token,
   TokenType,
@@ -56,14 +56,15 @@ class Lexer {
 
   private tokenizeNumber() {
     let value;
-    if (this.peek() === '0' && this.peek(1) === 'x') {
+    if (this.peek() === '0' && 'box'.indexOf(this.peek(1)) > -1) {
+      const base = 2 ** ('b_ox'.indexOf(this.next()) + 1);
       let buffer = '';
-      let current = this.next(2);
-      while (isHexDigit(current)) {
+      let current = this.next();
+      while (isDigit(current, base)) {
         buffer += current;
         current = this.next();
       }
-      value = parseInt(buffer, 16);
+      value = parseInt(buffer, base);
     } else {
       let buffer = '';
       let current = this.peek();

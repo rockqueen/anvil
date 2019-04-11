@@ -1,9 +1,6 @@
-export function isDigit(c: string): boolean {
-  return parseInt(c) === parseInt(c);
-}
-
-export function isHexDigit(c: string): boolean {
-  return isDigit(c) || (Boolean(c) && 'abcdef'.indexOf(c.toLowerCase()) !== -1);
+export function isDigit(c: string, base: number = 10): boolean {
+  const parsed = parseInt(c, base);
+  return parsed === parsed;
 }
 
 // a..z_
