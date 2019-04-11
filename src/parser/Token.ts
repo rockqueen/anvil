@@ -26,3 +26,22 @@ export function createToken<T extends TokenType>(
 ): Token<T> {
   return {type, value};
 }
+
+export const OPERATORS: {[c: string]: TokenType} = {
+  '+': TokenType.PLUS,
+  '-': TokenType.MINUS,
+  '*': TokenType.STAR,
+  '/': TokenType.SLASH,
+  '=': TokenType.EQ,
+  '(': TokenType.LPAREN,
+  ')': TokenType.RPAREN,
+  '++': TokenType.INC,
+};
+
+export const KEYWORDS: {
+  [c: string]: TokenType | [TokenType, number | string | boolean];
+} = {
+  let: TokenType.LET,
+  true: [TokenType.BOOLEAN, true],
+  false: [TokenType.BOOLEAN, false],
+};

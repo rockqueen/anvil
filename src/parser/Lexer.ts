@@ -1,26 +1,14 @@
-import {Token, TokenType, TokenValue, createToken} from './Token';
 import {isDigit, isHexDigit, isLetter} from './Utils';
-
-const OPERATORS: {[c: string]: TokenType} = {
-  '+': TokenType.PLUS,
-  '-': TokenType.MINUS,
-  '*': TokenType.STAR,
-  '/': TokenType.SLASH,
-  '=': TokenType.EQ,
-  '(': TokenType.LPAREN,
-  ')': TokenType.RPAREN,
-  '++': TokenType.INC,
-};
+import {
+  Token,
+  TokenType,
+  TokenValue,
+  createToken,
+  OPERATORS,
+  KEYWORDS,
+} from './Token';
 
 const OPERATORS_CHARS = new Set(Object.keys(OPERATORS).join(''));
-
-const KEYWORDS: {
-  [c: string]: TokenType | [TokenType, number | string | boolean];
-} = {
-  let: TokenType.LET,
-  true: [TokenType.BOOLEAN, true],
-  false: [TokenType.BOOLEAN, false],
-};
 
 class Lexer {
   private readonly input: string;
