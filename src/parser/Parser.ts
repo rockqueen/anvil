@@ -1,5 +1,12 @@
 import {Token, TokenType, OPERATORS} from './Token';
-import {AssignStatement, Node, Statement, Value, Expression} from '../AST';
+import {
+  AssignStatement,
+  Node,
+  Statement,
+  Value,
+  Expression,
+  Identifier,
+} from '../AST';
 
 function createNode<T extends Node>(data: T): T {
   return data;
@@ -72,72 +79,70 @@ class Parser {
     return createNode({type: 'AssignStatement', id, value});
   }
 
-  private parseExpression(): Value | Expression {
+  private parseExpression(): Value | Expression | Identifier {
     let result = this.parseMonomial();
     while (true) {
-      if (this.match(TokenType.PLUS)) {
-        result = createNode({
-          type: 'BinaryExpression',
-          operator: '+',
-          left: result,
-          right: this.parseMonomial(),
-        });
-        continue;
+      const token = this.get();
+      if (token.type !== TokenType.PLUS && token.type !== TokenType.MINUS) {
+        break;
       }
-      if (this.match(TokenType.MINUS)) {
-        result = createNode({
-          type: 'BinaryExpression',
-          operator: '-',
-          left: result,
-          right: this.parseMonomial(),
-        });
-        continue;
-      }
-      break;
+      this.next();
+      result = createNode({
+        type: 'BinaryExpression',
+        operator: token.type === TokenType.PLUS ? '+' : '-',
+        left: result,
+        right: this.parseMonomial(),
+      });
     }
     return result;
   }
 
-  private parseMonomial(): Value | Expression {
-    let result: Value | Expression = this.parseAtom();
+  private parseMonomial(): Value | Expression | Identifier {
+    let result: Value | Expression | Identifier = this.parseAtom();
     while (true) {
-      if (this.match(TokenType.STAR)) {
-        result = createNode({
-          type: 'BinaryExpression',
-          operator: '*',
-          left: result,
-          right: this.parseMonomial(),
-        });
-        continue;
+      const token = this.get();
+      if (token.type !== TokenType.STAR && token.type !== TokenType.SLASH) {
+        break;
       }
-      if (this.match(TokenType.SLASH)) {
-        result = createNode({
-          type: 'BinaryExpression',
-          operator: '/',
-          left: result,
-          right: this.parseMonomial(),
-        });
-        continue;
-      }
-      break;
+      this.next();
+      result = createNode({
+        type: 'BinaryExpression',
+        operator: token.type === TokenType.STAR ? '+' : '-',
+        left: result,
+        right: this.parseAtom(),
+      });
     }
     return result;
   }
 
-  private parseAtom(): Value | Expression {
+  private parseAtom(): Value | Expression | Identifier {
     const current = this.get();
-    if (this.match(TokenType.NUMBER)) {
-      const token = current as Token<TokenType.NUMBER>;
-      return createNode({type: 'NumberValue', value: token.value});
-    } else if (this.match(TokenType.MINUS)) {
-      const exp = this.parseAtom();
-      return createNode({type: 'UnaryExpression', operator: '-', value: exp});
-    } else if (this.match(TokenType.LPAREN)) {
-      const exp = this.parseExpression();
-      this.consume(TokenType.RPAREN);
-      return exp;
+    this.next();
+    switch (current.type) {
+      case TokenType.NUMBER:
+        return createNode({
+          type: 'NumberValue',
+          value: (current as Token<TokenType.NUMBER>).value,
+        });
+      case TokenType.ID:
+        return createNode({
+          type: 'Identifier',
+          name: (current as Token<TokenType.ID>).value,
+        });
+      // Maybe to `unary` function??
+      case TokenType.MINUS:
+        return createNode({
+          type: 'UnaryExpression',
+          operator: '-',
+          value: this.parseAtom(),
+        });
+      case TokenType.LPAREN:
+        const expression = this.parseExpression();
+        this.consume(TokenType.RPAREN);
+        return expression;
+      default:
+        throw new Error('Incorrect expression');
     }
-    throw new Error();
   }
 }
 
