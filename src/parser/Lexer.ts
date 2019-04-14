@@ -13,6 +13,8 @@ const OPERATORS_CHARS = new Set(Object.keys(OPERATORS).join(''));
 class Lexer {
   private readonly input: string;
   private readonly length: number;
+
+  private start: number = 0;
   private pos: number = 0;
   private tokens: Array<Token> = [];
 
@@ -32,11 +34,12 @@ class Lexer {
   }
 
   private addToken<T extends TokenType>(type: T, value: TokenValue<T>) {
-    this.tokens.push(createToken(type, value));
+    this.tokens.push(createToken(type, value, this.start, this.pos));
   }
 
   public tokenize(): Array<Token> {
     while (this.pos < this.length) {
+      this.start = this.pos;
       const current = this.peek();
       if (isDigit(current)) {
         this.tokenizeNumber();

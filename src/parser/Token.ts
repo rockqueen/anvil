@@ -18,13 +18,17 @@ export type TokenValue<T> =
 export type Token<T extends TokenType = TokenType> = {
   readonly type: T;
   readonly value: TokenValue<T>;
+  readonly start: number;
+  readonly end: number;
 };
 
 export function createToken<T extends TokenType>(
   type: T,
-  value: TokenValue<T>
+  value: TokenValue<T>,
+  start: number,
+  end: number
 ): Token<T> {
-  return {type, value};
+  return {type, value, start, end};
 }
 
 export const OPERATORS: {[c: string]: TokenType} = {
