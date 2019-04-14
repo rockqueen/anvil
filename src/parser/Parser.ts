@@ -26,8 +26,8 @@ class Parser {
     return this.tokens[finalPosition] || this.tokens[this.size - 1];
   }
 
-  private next(count: number = 1): Token {
-    this.pos += count;
+  private next(): Token {
+    this.pos += 1;
     return this.get();
   }
 
@@ -57,11 +57,14 @@ class Parser {
     return createNode({type: 'BlockStatement', children});
   }
 
+  /**
+   * Statement parser
+   */
   private statement(): Statement {
     if (this.match(TokenType.LET)) {
       return this.assignStatement();
     }
-    throw new Error();
+    throw new Error(`Unknown statement`);
   }
 
   private assignStatement(): AssignStatement {
@@ -73,7 +76,15 @@ class Parser {
     return createNode({type: 'AssignStatement', id, value});
   }
 
+  /**
+   * Expression parser
+   * Addictive expression -> multiplicative expression -> unary operations -> atom value
+   */
   private expression(): Expression {
+    return this.addictive();
+  }
+
+  private addictive(): Expression {
     let result = this.multiplicative();
     while (true) {
       const token = this.get();
@@ -118,6 +129,9 @@ class Parser {
         operator: '-',
         value: this.atom(),
       });
+    }
+    if (this.match(TokenType.PLUS)) {
+      return this.atom();
     }
     return this.atom();
   }

@@ -26,8 +26,8 @@ class Lexer {
     return this.input[finalPosition] || '';
   }
 
-  private next(count: number = 1): string {
-    this.pos += count;
+  private next(): string {
+    this.pos += 1;
     return this.peek();
   }
 
