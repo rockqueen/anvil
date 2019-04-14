@@ -3,9 +3,8 @@ import {
   AssignStatement,
   Node,
   Statement,
-  Value,
   Expression,
-  Identifier,
+  ExpressionStatement,
 } from '../AST';
 
 function createNode<T extends Node>(data: T): T {
@@ -53,34 +52,29 @@ class Parser {
   public parse() {
     const children: Array<Statement> = [];
     while (!this.match(TokenType.EOF)) {
-      children.push(this.parseStatement());
+      children.push(this.statement());
     }
     return createNode({type: 'BlockStatement', children});
   }
 
-  private parseStatement(): Statement {
-    const current = this.get();
-    this.next();
-    switch (current.type) {
-      case TokenType.LET:
-        return this.parseAssignStatement();
-      default:
-        throw new Error(`Unknown token for statement`);
+  private statement(): Statement {
+    if (this.match(TokenType.LET)) {
+      return this.assignStatement();
     }
+    throw new Error();
   }
 
-  private parseAssignStatement(): AssignStatement {
+  private assignStatement(): AssignStatement {
     const id = createNode({
-      type: 'Identifier',
+      type: 'IdentifierExpression',
       name: this.consume(TokenType.ID).value,
     });
-    this.consume(TokenType.EQ);
-    const value = this.parseExpression();
+    const value = this.match(TokenType.EQ) ? this.expression() : null;
     return createNode({type: 'AssignStatement', id, value});
   }
 
-  private parseExpression(): Value | Expression | Identifier {
-    let result = this.parseMonomial();
+  private expression(): Expression {
+    let result = this.multiplicative();
     while (true) {
       const token = this.get();
       if (token.type !== TokenType.PLUS && token.type !== TokenType.MINUS) {
@@ -91,14 +85,14 @@ class Parser {
         type: 'BinaryExpression',
         operator: token.type === TokenType.PLUS ? '+' : '-',
         left: result,
-        right: this.parseMonomial(),
+        right: this.multiplicative(),
       });
     }
     return result;
   }
 
-  private parseMonomial(): Value | Expression | Identifier {
-    let result: Value | Expression | Identifier = this.parseAtom();
+  private multiplicative(): Expression {
+    let result = this.unary();
     while (true) {
       const token = this.get();
       if (token.type !== TokenType.STAR && token.type !== TokenType.SLASH) {
@@ -107,37 +101,43 @@ class Parser {
       this.next();
       result = createNode({
         type: 'BinaryExpression',
-        operator: token.type === TokenType.STAR ? '+' : '-',
+        operator: token.type === TokenType.STAR ? '*' : '/',
         left: result,
-        right: this.parseAtom(),
+        right: this.unary(),
       });
     }
     return result;
   }
 
-  private parseAtom(): Value | Expression | Identifier {
+  private unary() {
+    const current = this.get();
+    if (current.type === TokenType.MINUS) {
+      this.next();
+      return createNode({
+        type: 'UnaryExpression',
+        operator: '-',
+        value: this.atom(),
+      });
+    }
+    return this.atom();
+  }
+
+  private atom(): Expression {
     const current = this.get();
     this.next();
     switch (current.type) {
       case TokenType.NUMBER:
         return createNode({
-          type: 'NumberValue',
+          type: 'NumberExpression',
           value: (current as Token<TokenType.NUMBER>).value,
         });
       case TokenType.ID:
         return createNode({
-          type: 'Identifier',
+          type: 'IdentifierExpression',
           name: (current as Token<TokenType.ID>).value,
         });
-      // Maybe to `unary` function??
-      case TokenType.MINUS:
-        return createNode({
-          type: 'UnaryExpression',
-          operator: '-',
-          value: this.parseAtom(),
-        });
       case TokenType.LPAREN:
-        const expression = this.parseExpression();
+        const expression = this.expression();
         this.consume(TokenType.RPAREN);
         return expression;
       default:
