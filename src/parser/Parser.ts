@@ -1,11 +1,5 @@
-import {Token, TokenType, OPERATORS} from './Token';
-import {
-  AssignStatement,
-  Node,
-  Statement,
-  Expression,
-  ExpressionStatement,
-} from '../AST';
+import {Token, TokenType} from './Token';
+import Node, * as NodeType from '../AST';
 
 function createNode<T extends Node>(data: T): T {
   return data;
@@ -50,7 +44,7 @@ class Parser {
   }
 
   public parse() {
-    const children: Array<Statement> = [];
+    const children: Array<NodeType.Statement> = [];
     while (!this.match(TokenType.EOF)) {
       children.push(this.statement());
     }
@@ -60,14 +54,14 @@ class Parser {
   /**
    * Statement parser
    */
-  private statement(): Statement {
+  private statement(): NodeType.Statement {
     if (this.match(TokenType.LET)) {
       return this.assignStatement();
     }
     throw new Error(`Unknown statement`);
   }
 
-  private assignStatement(): AssignStatement {
+  private assignStatement(): NodeType.AssignStatement {
     const id = createNode({
       type: 'IdentifierExpression',
       name: this.consume(TokenType.ID).value,
@@ -80,11 +74,11 @@ class Parser {
    * Expression parser
    * Addictive expression -> multiplicative expression -> unary operations -> atom value
    */
-  private expression(): Expression {
+  private expression(): NodeType.Expression {
     return this.addictive();
   }
 
-  private addictive(): Expression {
+  private addictive(): NodeType.Expression {
     let result = this.multiplicative();
     while (true) {
       const token = this.get();
@@ -102,7 +96,7 @@ class Parser {
     return result;
   }
 
-  private multiplicative(): Expression {
+  private multiplicative(): NodeType.Expression {
     let result = this.unary();
     while (true) {
       const token = this.get();
@@ -136,7 +130,7 @@ class Parser {
     return this.atom();
   }
 
-  private atom(): Expression {
+  private atom(): NodeType.Expression {
     const current = this.get();
     this.next();
     switch (current.type) {

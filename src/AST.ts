@@ -1,10 +1,10 @@
-export type Node = Expression | Statement;
+type Node = Expression | Statement;
+export default Node;
 
 /**
  * OPERATORS
  */
-export type Operator = UnaryOperator | BinaryOperator;
-export type UnaryOperator = '-';
+export type UnaryOperator = '+' | '-';
 export type BinaryOperator = '+' | '-' | '*' | '/' | '=';
 
 /**
