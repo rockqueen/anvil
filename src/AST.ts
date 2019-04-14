@@ -1,36 +1,58 @@
-export type Node = Identifier | Value | Operator | Expression | Statement;
+export type Node = Expression | Statement;
 
-export type Identifier = {type: 'Identifier'; name: string};
-
-export type Value = NumberValue | StringValue | BooleanValue;
-export type NumberValue = {type: 'NumberValue'; value: number};
-export type StringValue = {type: 'StringValue'; value: string};
-export type BooleanValue = {type: 'BooleanValue'; value: boolean};
-
+/**
+ * OPERATORS
+ */
 export type Operator = UnaryOperator | BinaryOperator;
-export type UnaryOperator = '++' | '--';
+export type UnaryOperator = '-';
 export type BinaryOperator = '+' | '-' | '*' | '/' | '=';
 
-export type Expression = UnaryExpression | BinaryExpression;
+/**
+ * EXPRESSIONS
+ */
+export type Expression =
+  | NumberExpression
+  | StringExpression
+  | BooleanExpression
+  | IdentifierExpression
+  | UnaryExpression
+  | BinaryExpression
+  | AssignExpression;
+export type NumberExpression = {type: 'NumberExpression'; value: number};
+export type StringExpression = {type: 'NumberExpression'; value: string};
+export type BooleanExpression = {type: 'BooleanExpression'; value: boolean};
+export type IdentifierExpression = {type: 'IdentifierExpression'; name: string};
 export type UnaryExpression = {
   type: 'UnaryExpression';
   operator: UnaryOperator;
-  value: Value | Expression;
+  value: Expression;
 };
 export type BinaryExpression = {
   type: 'BinaryExpression';
   operator: BinaryOperator;
-  left: Value | Expression;
-  right: Value | Expression;
+  left: Expression;
+  right: Expression;
+};
+export type AssignExpression = {
+  type: 'AssignExpression';
+  id: IdentifierExpression;
+  value: Expression;
 };
 
-export type Statement = AssignStatement | BlockStatement;
+/**
+ * STATEMENTS
+ */
+export type Statement = AssignStatement | BlockStatement | ExpressionStatement;
 export type AssignStatement = {
   type: 'AssignStatement';
-  id: Identifier;
-  value: Value | Expression;
+  id: IdentifierExpression;
+  value: Expression | null;
 };
 export type BlockStatement = {
   type: 'BlockStatement';
   children: Array<Statement>;
+};
+export type ExpressionStatement = {
+  type: 'ExpressionStatement';
+  expression: Expression;
 };
