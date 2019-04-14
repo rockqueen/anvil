@@ -12,9 +12,14 @@ it('tokenizes string', () => {
 });
 
 it('tokenizes numbers', () => {
-  const decimal = new Lexer('0100').tokenize();
-  expect(decimal[0]).toEqual(createToken(TokenType.NUMBER, 100));
+  const decimal = new Lexer('00100.1').tokenize();
+  const bin = new Lexer('0b110').tokenize();
+  const octal = new Lexer('0o17').tokenize();
   const hex = new Lexer('0xaa').tokenize();
+
+  expect(decimal[0]).toEqual(createToken(TokenType.NUMBER, 100.1));
+  expect(bin[0]).toEqual(createToken(TokenType.NUMBER, 6));
+  expect(octal[0]).toEqual(createToken(TokenType.NUMBER, 15));
   expect(hex[0]).toEqual(createToken(TokenType.NUMBER, 170));
 });
 
