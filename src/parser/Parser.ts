@@ -139,6 +139,16 @@ class Parser {
           type: 'NumberExpression',
           value: (current as Token<TokenType.NUMBER>).value,
         });
+      case TokenType.STRING:
+        return createNode({
+          type: 'StringExpression',
+          value: (current as Token<TokenType.STRING>).value,
+        });
+      case TokenType.BOOLEAN:
+        return createNode({
+          type: 'BooleanExpression',
+          value: (current as Token<TokenType.BOOLEAN>).value,
+        });
       case TokenType.ID:
         return createNode({
           type: 'IdentifierExpression',

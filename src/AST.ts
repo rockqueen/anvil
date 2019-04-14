@@ -19,7 +19,7 @@ export type Expression =
   | BinaryExpression
   | AssignExpression;
 export type NumberExpression = {type: 'NumberExpression'; value: number};
-export type StringExpression = {type: 'NumberExpression'; value: string};
+export type StringExpression = {type: 'StringExpression'; value: string};
 export type BooleanExpression = {type: 'BooleanExpression'; value: boolean};
 export type IdentifierExpression = {type: 'IdentifierExpression'; name: string};
 export type UnaryExpression = {
