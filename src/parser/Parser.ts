@@ -64,18 +64,47 @@ class Parser {
   private assignStatement(): NodeType.AssignStatement {
     const id = createNode({
       type: 'IdentifierExpression',
-      name: this.consume(TokenType.ID).value,
+      value: this.consume(TokenType.ID).value,
     });
-    const value = this.match(TokenType.EQ) ? this.expression() : null;
+    const value = this.match(TokenType.EQ)
+      ? this.expression()
+      : createNode({type: 'NullExpression', value: null});
     return createNode({type: 'AssignStatement', id, value});
   }
 
   /**
    * Expression parser
-   * Addictive expression -> multiplicative expression -> unary operations -> atom value
    */
   private expression(): NodeType.Expression {
-    return this.addictive();
+    return this.conditional();
+  }
+
+  private readonly conditionalOperators: {
+    [c: number]: NodeType.ConditionalOperator;
+  } = {
+    [TokenType.LT]: '<',
+    [TokenType.LTEQ]: '<=',
+    [TokenType.GT]: '>',
+    [TokenType.GTEQ]: '>=',
+    [TokenType.EQEQ]: '==',
+  };
+
+  private conditional(): NodeType.Expression {
+    let result = this.addictive();
+    while (true) {
+      const token = this.get();
+      if (!(token.type in this.conditionalOperators)) {
+        break;
+      }
+      this.next();
+      result = createNode({
+        type: 'ConditionalExpression',
+        operator: this.conditionalOperators[token.type],
+        left: result,
+        right: this.addictive(),
+      });
+    }
+    return result;
   }
 
   private addictive(): NodeType.Expression {
@@ -96,17 +125,26 @@ class Parser {
     return result;
   }
 
+  private readonly multiplicativeOperators: {
+    [c: number]: NodeType.BinaryOperator;
+  } = {
+    [TokenType.STAR]: '*',
+    [TokenType.SLASH]: '/',
+    [TokenType.PERCENT]: '%',
+    [TokenType.SLASHSLASH]: '//',
+  };
+
   private multiplicative(): NodeType.Expression {
     let result = this.unary();
     while (true) {
       const token = this.get();
-      if (token.type !== TokenType.STAR && token.type !== TokenType.SLASH) {
+      if (!(token.type in this.multiplicativeOperators)) {
         break;
       }
       this.next();
       result = createNode({
         type: 'BinaryExpression',
-        operator: token.type === TokenType.STAR ? '*' : '/',
+        operator: this.multiplicativeOperators[token.type],
         left: result,
         right: this.unary(),
       });
@@ -114,20 +152,38 @@ class Parser {
     return result;
   }
 
-  private unary() {
+  private unary(): NodeType.Expression {
     const current = this.get();
     if (current.type === TokenType.MINUS) {
       this.next();
       return createNode({
         type: 'UnaryExpression',
         operator: '-',
-        value: this.atom(),
+        value: this.poweable(),
       });
     }
     if (this.match(TokenType.PLUS)) {
-      return this.atom();
+      return this.poweable();
     }
-    return this.atom();
+    return this.poweable();
+  }
+
+  private poweable(): NodeType.Expression {
+    let result = this.atom();
+    while (true) {
+      const token = this.get();
+      if (token.type !== TokenType.POW) {
+        break;
+      }
+      this.next();
+      result = createNode({
+        type: 'BinaryExpression',
+        operator: '**',
+        left: result,
+        right: this.atom(),
+      });
+    }
+    return result;
   }
 
   private atom(): NodeType.Expression {
@@ -152,7 +208,7 @@ class Parser {
       case TokenType.ID:
         return createNode({
           type: 'IdentifierExpression',
-          name: (current as Token<TokenType.ID>).value,
+          value: (current as Token<TokenType.ID>).value,
         });
       case TokenType.LPAREN:
         const expression = this.expression();

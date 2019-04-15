@@ -1,8 +1,8 @@
 // prettier-ignore
 export const enum TokenType {
   NUMBER, BOOLEAN, STRING, ID,
-  PLUS, MINUS, STAR, SLASH, EQ,
-  INC,
+  PLUS, MINUS, STAR, SLASH, EQ, POW, PERCENT, SLASHSLASH,
+  LT, LTEQ, GT, GTEQ, EQEQ,
   LPAREN, RPAREN,
   LET,
   EOF,
@@ -37,9 +37,16 @@ export const OPERATORS: {[c: string]: TokenType} = {
   '*': TokenType.STAR,
   '/': TokenType.SLASH,
   '=': TokenType.EQ,
+  '**': TokenType.POW,
+  '%': TokenType.PERCENT,
+  '//': TokenType.SLASHSLASH,
+  '<': TokenType.LT,
+  '<=': TokenType.LTEQ,
+  '>': TokenType.GT,
+  '>=': TokenType.GTEQ,
+  '==': TokenType.EQEQ,
   '(': TokenType.LPAREN,
   ')': TokenType.RPAREN,
-  '++': TokenType.INC,
 };
 
 export const KEYWORDS: {
