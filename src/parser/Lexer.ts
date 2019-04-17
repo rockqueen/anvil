@@ -1,4 +1,3 @@
-import {isDigit, isLetter} from './Utils';
 import {
   Token,
   TokenType,
@@ -9,6 +8,16 @@ import {
 } from './Token';
 
 const OPERATORS_CHARS = new Set(Object.keys(OPERATORS).join(''));
+
+function isDigit(c: string, base: number = 10): boolean {
+  const parsed = parseInt(c, base);
+  return parsed === parsed;
+}
+
+function isWordSymbol(c: string): boolean {
+  const code = c.toLowerCase().charCodeAt(0);
+  return (code >= 97 && code <= 122) || code === 95;
+}
 
 class Lexer {
   private readonly input: string;
@@ -47,7 +56,7 @@ class Lexer {
         this.tokenizeOperator();
       } else if (current === '"') {
         this.tokenizeString();
-      } else if (isLetter(current)) {
+      } else if (isWordSymbol(current)) {
         this.tokenizeWord();
       } else {
         this.next();
@@ -104,7 +113,7 @@ class Lexer {
   private tokenizeWord() {
     let word = '';
     let current = this.peek();
-    while (isLetter(current)) {
+    while (isWordSymbol(current)) {
       word += current;
       current = this.next();
     }

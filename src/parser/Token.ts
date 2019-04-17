@@ -3,8 +3,8 @@ export const enum TokenType {
   NUMBER, BOOLEAN, STRING, ID,
   PLUS, MINUS, STAR, SLASH, EQ, POW, PERCENT, SLASHSLASH,
   LT, LTEQ, GT, GTEQ, EQEQ,
-  LPAREN, RPAREN,
-  LET,
+  LPAREN, RPAREN, LBRACE, RBRACE,
+  LET, IF,
   EOF,
 }
 
@@ -47,12 +47,15 @@ export const OPERATORS: {[c: string]: TokenType} = {
   '==': TokenType.EQEQ,
   '(': TokenType.LPAREN,
   ')': TokenType.RPAREN,
+  '{': TokenType.LBRACE,
+  '}': TokenType.RBRACE,
 };
 
 export const KEYWORDS: {
   [c: string]: TokenType | [TokenType, number | string | boolean];
 } = {
   let: TokenType.LET,
+  if: TokenType.IF,
   true: [TokenType.BOOLEAN, true],
   false: [TokenType.BOOLEAN, false],
 };

@@ -1,3 +1,4 @@
+import BaseParser from './BaseParser';
 import {Token, TokenType} from './Token';
 import Node, * as NodeType from '../AST';
 
@@ -5,77 +6,8 @@ function createNode<T extends Node>(data: T): T {
   return data;
 }
 
-class Parser {
-  private readonly tokens: ReadonlyArray<Token>;
-  private readonly size: number;
-  private pos = 0;
-
-  constructor(tokens: Array<Token>) {
-    this.tokens = tokens;
-    this.size = this.tokens.length;
-  }
-
-  private get(relative: number = 0): Token {
-    const finalPosition = this.pos + relative;
-    return this.tokens[finalPosition] || this.tokens[this.size - 1];
-  }
-
-  private next(): Token {
-    this.pos += 1;
-    return this.get();
-  }
-
-  private match(type: TokenType): boolean {
-    const current = this.get();
-    if (current.type === type) {
-      this.next();
-      return true;
-    }
-    return false;
-  }
-
-  private consume<T extends TokenType>(type: T): Token<T> {
-    const current = this.get();
-    if (current.type === type) {
-      this.pos++;
-      return current as Token<T>;
-    }
-    throw new Error('No expected token');
-  }
-
-  public parse() {
-    const children: Array<NodeType.Statement> = [];
-    while (!this.match(TokenType.EOF)) {
-      children.push(this.statement());
-    }
-    return createNode({type: 'BlockStatement', children});
-  }
-
-  /**
-   * Statement parser
-   */
-  private statement(): NodeType.Statement {
-    if (this.match(TokenType.LET)) {
-      return this.assignStatement();
-    }
-    throw new Error(`Unknown statement`);
-  }
-
-  private assignStatement(): NodeType.AssignStatement {
-    const id = createNode({
-      type: 'IdentifierExpression',
-      value: this.consume(TokenType.ID).value,
-    });
-    const value = this.match(TokenType.EQ)
-      ? this.expression()
-      : createNode({type: 'NullExpression', value: null});
-    return createNode({type: 'AssignStatement', id, value});
-  }
-
-  /**
-   * Expression parser
-   */
-  private expression(): NodeType.Expression {
+class ExpressionParser extends BaseParser {
+  protected expression(): NodeType.Expression {
     return this.conditional();
   }
 
@@ -98,7 +30,7 @@ class Parser {
       }
       this.next();
       result = createNode({
-        type: 'ConditionalExpression',
+        type: 'ConditionExpression',
         operator: this.conditionalOperators[token.type],
         left: result,
         right: this.addictive(),
@@ -220,4 +152,4 @@ class Parser {
   }
 }
 
-export default Parser;
+export default ExpressionParser;

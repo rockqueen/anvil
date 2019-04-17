@@ -19,7 +19,7 @@ export type Expression =
   | IdentifierExpression
   | UnaryExpression
   | BinaryExpression
-  | ConditionalExpression
+  | ConditionExpression
   | AssignExpression;
 export type NumberExpression = {type: 'NumberExpression'; value: number};
 export type StringExpression = {type: 'StringExpression'; value: string};
@@ -40,8 +40,8 @@ export type BinaryExpression = {
   left: Expression;
   right: Expression;
 };
-export type ConditionalExpression = {
-  type: 'ConditionalExpression';
+export type ConditionExpression = {
+  type: 'ConditionExpression';
   operator: ConditionalOperator;
   left: Expression;
   right: Expression;
@@ -55,11 +55,21 @@ export type AssignExpression = {
 /**
  * STATEMENTS
  */
-export type Statement = AssignStatement | BlockStatement | ExpressionStatement;
+export type Statement =
+  | AssignStatement
+  | IfStatement
+  | BlockStatement
+  | ExpressionStatement;
 export type AssignStatement = {
   type: 'AssignStatement';
   id: IdentifierExpression;
   value: Expression;
+};
+export type IfStatement = {
+  type: 'IfStatement';
+  condition: ConditionExpression;
+  body: BlockStatement;
+  // alternate:
 };
 export type BlockStatement = {
   type: 'BlockStatement';
