@@ -7,12 +7,12 @@ export function createToken<T extends TokenType>(
   return {type, value, start, end};
 }
 
-export type Token<T extends TokenType = TokenType> = {
-  readonly type: T;
-  readonly value: TokenValue<T>;
-  readonly start: number;
-  readonly end: number;
-};
+export type Token<T extends TokenType = TokenType> = Readonly<{
+  type: T;
+  value: TokenValue<T>;
+  start: number;
+  end: number;
+}>;
 
 export const enum TokenType {
   // Types
