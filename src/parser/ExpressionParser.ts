@@ -1,37 +1,42 @@
 import BaseParser from './BaseParser';
-import {Token, TokenType} from './Token';
-import Node, * as NodeType from '../AST';
+import {Token, TokenType as TT, OPERATOR_TOKENS} from './Token';
+import Node, * as NT from '../AST';
 
 function createNode<T extends Node>(data: T): T {
   return data;
 }
 
+const CONDITIONAL_TOKENS: Set<TT> = new Set([
+  TT.LT,
+  TT.LTEQ,
+  TT.GT,
+  TT.GTEQ,
+  TT.EQEQ,
+]);
+
+const MULTIPLICATIVE_TOKENS: Set<TT> = new Set([
+  TT.STAR,
+  TT.SLASH,
+  TT.PERCENT,
+  TT.SLASHSLASH,
+]);
+
 class ExpressionParser extends BaseParser {
-  protected expression(): NodeType.Expression {
+  protected expression(): NT.Expression {
     return this.conditional();
   }
 
-  private readonly conditionalOperators: {
-    [c: number]: NodeType.ConditionalOperator;
-  } = {
-    [TokenType.LT]: '<',
-    [TokenType.LTEQ]: '<=',
-    [TokenType.GT]: '>',
-    [TokenType.GTEQ]: '>=',
-    [TokenType.EQEQ]: '==',
-  };
-
-  private conditional(): NodeType.Expression {
+  private conditional(): NT.Expression {
     let result = this.addictive();
     while (true) {
       const token = this.get();
-      if (!(token.type in this.conditionalOperators)) {
+      if (!CONDITIONAL_TOKENS.has(token.type)) {
         break;
       }
       this.next();
       result = createNode({
         type: 'ConditionExpression',
-        operator: this.conditionalOperators[token.type],
+        operator: <NT.ConditionalOperator>OPERATOR_TOKENS[token.type],
         left: result,
         right: this.addictive(),
       });
@@ -39,17 +44,17 @@ class ExpressionParser extends BaseParser {
     return result;
   }
 
-  private addictive(): NodeType.Expression {
+  private addictive(): NT.Expression {
     let result = this.multiplicative();
     while (true) {
       const token = this.get();
-      if (token.type !== TokenType.PLUS && token.type !== TokenType.MINUS) {
+      if (token.type !== TT.PLUS && token.type !== TT.MINUS) {
         break;
       }
       this.next();
       result = createNode({
         type: 'BinaryExpression',
-        operator: token.type === TokenType.PLUS ? '+' : '-',
+        operator: token.type === TT.PLUS ? '+' : '-',
         left: result,
         right: this.multiplicative(),
       });
@@ -57,26 +62,17 @@ class ExpressionParser extends BaseParser {
     return result;
   }
 
-  private readonly multiplicativeOperators: {
-    [c: number]: NodeType.BinaryOperator;
-  } = {
-    [TokenType.STAR]: '*',
-    [TokenType.SLASH]: '/',
-    [TokenType.PERCENT]: '%',
-    [TokenType.SLASHSLASH]: '//',
-  };
-
-  private multiplicative(): NodeType.Expression {
+  private multiplicative(): NT.Expression {
     let result = this.unary();
     while (true) {
       const token = this.get();
-      if (!(token.type in this.multiplicativeOperators)) {
+      if (!MULTIPLICATIVE_TOKENS.has(token.type)) {
         break;
       }
       this.next();
       result = createNode({
         type: 'BinaryExpression',
-        operator: this.multiplicativeOperators[token.type],
+        operator: <NT.BinaryOperator>OPERATOR_TOKENS[token.type],
         left: result,
         right: this.unary(),
       });
@@ -84,33 +80,33 @@ class ExpressionParser extends BaseParser {
     return result;
   }
 
-  private unary(): NodeType.Expression {
+  private unary(): NT.Expression {
     const current = this.get();
-    if (current.type === TokenType.MINUS) {
+    if (current.type === TT.MINUS) {
       this.next();
       return createNode({
         type: 'UnaryExpression',
         operator: '-',
-        value: this.poweable(),
+        value: this.pow(),
       });
     }
-    if (this.match(TokenType.PLUS)) {
-      return this.poweable();
+    if (this.match(TT.PLUS)) {
+      return this.pow();
     }
-    return this.poweable();
+    return this.pow();
   }
 
-  private poweable(): NodeType.Expression {
+  private pow(): NT.Expression {
     let result = this.atom();
     while (true) {
       const token = this.get();
-      if (token.type !== TokenType.POW) {
+      if (token.type !== TT.POW) {
         break;
       }
       this.next();
       result = createNode({
         type: 'BinaryExpression',
-        operator: '**',
+        operator: <NT.BinaryOperator>OPERATOR_TOKENS[TT.POW],
         left: result,
         right: this.atom(),
       });
@@ -118,33 +114,33 @@ class ExpressionParser extends BaseParser {
     return result;
   }
 
-  private atom(): NodeType.Expression {
+  private atom(): NT.Expression {
     const current = this.get();
     this.next();
     switch (current.type) {
-      case TokenType.NUMBER:
+      case TT.NUMBER:
         return createNode({
           type: 'NumberExpression',
-          value: (current as Token<TokenType.NUMBER>).value,
+          value: (current as Token<TT.NUMBER>).value,
         });
-      case TokenType.STRING:
+      case TT.STRING:
         return createNode({
           type: 'StringExpression',
-          value: (current as Token<TokenType.STRING>).value,
+          value: (current as Token<TT.STRING>).value,
         });
-      case TokenType.BOOLEAN:
+      case TT.BOOLEAN:
         return createNode({
           type: 'BooleanExpression',
-          value: (current as Token<TokenType.BOOLEAN>).value,
+          value: (current as Token<TT.BOOLEAN>).value,
         });
-      case TokenType.ID:
+      case TT.ID:
         return createNode({
           type: 'IdentifierExpression',
-          value: (current as Token<TokenType.ID>).value,
+          value: (current as Token<TT.ID>).value,
         });
-      case TokenType.LPAREN:
+      case TT.LPAREN:
         const expression = this.expression();
-        this.consume(TokenType.RPAREN);
+        this.consume(TT.RPAREN);
         return expression;
       default:
         throw new Error('Incorrect expression');
