@@ -6,115 +6,66 @@ function createNode<T extends Node>(data: T): T {
   return data;
 }
 
-const CONDITIONAL_TOKENS: Set<TT> = new Set([
-  TT.LT,
-  TT.LTEQ,
-  TT.GT,
-  TT.GTEQ,
-  TT.EQEQ,
-]);
-
-const MULTIPLICATIVE_TOKENS: Set<TT> = new Set([
-  TT.STAR,
-  TT.SLASH,
-  TT.PERCENT,
-  TT.SLASHSLASH,
-]);
+function getPrecedence(token: TT): number {
+  switch (token) {
+    case TT.LT:
+    case TT.LTEQ:
+    case TT.GT:
+    case TT.GTEQ:
+    case TT.EQEQ:
+      return 1;
+    case TT.PLUS:
+    case TT.MINUS:
+      return 2;
+    case TT.STAR:
+    case TT.SLASH:
+    case TT.SLASHSLASH:
+    case TT.PERCENT:
+      return 3;
+    case TT.POW:
+      return 4;
+    default:
+      return 0;
+  }
+}
 
 class ExpressionParser extends BaseParser {
   protected expression(): NT.Expression {
-    return this.conditional();
+    return this.binaryExpression();
   }
 
-  private conditional(): NT.Expression {
-    let result = this.addictive();
+  private binaryExpression(prec: number = 1) {
+    let result = this.unaryExpression();
     while (true) {
       const token = this.get();
-      if (!CONDITIONAL_TOKENS.has(token.type)) {
-        break;
-      }
-      this.next();
-      result = createNode({
-        type: 'ConditionExpression',
-        operator: <NT.ConditionalOperator>OPERATOR_TOKENS[token.type],
-        left: result,
-        right: this.addictive(),
-      });
-    }
-    return result;
-  }
-
-  private addictive(): NT.Expression {
-    let result = this.multiplicative();
-    while (true) {
-      const token = this.get();
-      if (token.type !== TT.PLUS && token.type !== TT.MINUS) {
-        break;
-      }
-      this.next();
-      result = createNode({
-        type: 'BinaryExpression',
-        operator: token.type === TT.PLUS ? '+' : '-',
-        left: result,
-        right: this.multiplicative(),
-      });
-    }
-    return result;
-  }
-
-  private multiplicative(): NT.Expression {
-    let result = this.unary();
-    while (true) {
-      const token = this.get();
-      if (!MULTIPLICATIVE_TOKENS.has(token.type)) {
-        break;
+      const tprec = getPrecedence(token.type);
+      if (tprec < prec) {
+        return result;
       }
       this.next();
       result = createNode({
         type: 'BinaryExpression',
         operator: <NT.BinaryOperator>OPERATOR_TOKENS[token.type],
         left: result,
-        right: this.unary(),
+        right: this.binaryExpression(tprec + 1),
       });
     }
-    return result;
   }
 
-  private unary(): NT.Expression {
+  private unaryExpression(): NT.Expression {
     const current = this.get();
     if (current.type === TT.MINUS) {
       this.next();
       return createNode({
         type: 'UnaryExpression',
         operator: '-',
-        value: this.pow(),
+        value: this.primary(),
       });
     }
-    if (this.match(TT.PLUS)) {
-      return this.pow();
-    }
-    return this.pow();
+    return this.primary();
   }
 
-  private pow(): NT.Expression {
-    let result = this.atom();
-    while (true) {
-      const token = this.get();
-      if (token.type !== TT.POW) {
-        break;
-      }
-      this.next();
-      result = createNode({
-        type: 'BinaryExpression',
-        operator: <NT.BinaryOperator>OPERATOR_TOKENS[TT.POW],
-        left: result,
-        right: this.atom(),
-      });
-    }
-    return result;
-  }
-
-  private atom(): NT.Expression {
+  private primary(): NT.Expression {
     const current = this.get();
     this.next();
     switch (current.type) {
@@ -143,7 +94,7 @@ class ExpressionParser extends BaseParser {
         this.consume(TT.RPAREN);
         return expression;
       default:
-        throw new Error('Incorrect expression');
+        throw new Error('Incorrect expression ' + current.type);
     }
   }
 }
