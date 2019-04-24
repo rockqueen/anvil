@@ -1,28 +1,32 @@
 import BaseParser from './BaseParser';
-import {Token, TokenType as TT, OPERATOR_TOKENS} from './Token';
-import Node, * as NT from '../AST';
+import {Token, TokenType, OPERATOR_TOKENS} from './Token';
+import {
+  Expression,
+  BinaryExpression,
+  UnaryExpression,
+  NumberExpression,
+  StringExpression,
+  BooleanExpression,
+  IdentifierExpression,
+} from '../ast/Expression';
 
-function createNode<T extends Node>(data: T): T {
-  return data;
-}
-
-function getPrecedence(token: TT): number {
+function getPrecedence(token: TokenType): number {
   switch (token) {
-    case TT.LT:
-    case TT.LTEQ:
-    case TT.GT:
-    case TT.GTEQ:
-    case TT.EQEQ:
+    case TokenType.LT:
+    case TokenType.LTEQ:
+    case TokenType.GT:
+    case TokenType.GTEQ:
+    case TokenType.EQEQ:
       return 1;
-    case TT.PLUS:
-    case TT.MINUS:
+    case TokenType.PLUS:
+    case TokenType.MINUS:
       return 2;
-    case TT.STAR:
-    case TT.SLASH:
-    case TT.SLASHSLASH:
-    case TT.PERCENT:
+    case TokenType.STAR:
+    case TokenType.SLASH:
+    case TokenType.SLASHSLASH:
+    case TokenType.PERCENT:
       return 3;
-    case TT.POW:
+    case TokenType.POW:
       return 4;
     default:
       return 0;
@@ -30,7 +34,15 @@ function getPrecedence(token: TT): number {
 }
 
 class ExpressionParser extends BaseParser {
-  protected expression(): NT.Expression {
+  protected identifier(): IdentifierExpression {
+    const current = this.get();
+    if (current.type === TokenType.ID) {
+      return <IdentifierExpression>this.primary();
+    }
+    throw new Error('No identifier');
+  }
+
+  protected expression(): Expression {
     return this.binaryExpression();
   }
 
@@ -43,55 +55,40 @@ class ExpressionParser extends BaseParser {
         return result;
       }
       this.next();
-      result = createNode({
-        type: 'BinaryExpression',
-        operator: <NT.BinaryOperator>OPERATOR_TOKENS[token.type],
-        left: result,
-        right: this.binaryExpression(tprec + 1),
-      });
+      result = new BinaryExpression(
+        OPERATOR_TOKENS[token.type],
+        result,
+        this.binaryExpression(tprec + 1)
+      );
     }
   }
 
-  private unaryExpression(): NT.Expression {
+  private unaryExpression() {
     const current = this.get();
-    if (current.type === TT.MINUS) {
+    if (current.type === TokenType.MINUS) {
       this.next();
-      return createNode({
-        type: 'UnaryExpression',
-        operator: '-',
-        value: this.primary(),
-      });
+      return new UnaryExpression('-', this.primary());
     }
     return this.primary();
   }
 
-  private primary(): NT.Expression {
+  private primary() {
     const current = this.get();
     this.next();
     switch (current.type) {
-      case TT.NUMBER:
-        return createNode({
-          type: 'NumberExpression',
-          value: (current as Token<TT.NUMBER>).value,
-        });
-      case TT.STRING:
-        return createNode({
-          type: 'StringExpression',
-          value: (current as Token<TT.STRING>).value,
-        });
-      case TT.BOOLEAN:
-        return createNode({
-          type: 'BooleanExpression',
-          value: (current as Token<TT.BOOLEAN>).value,
-        });
-      case TT.ID:
-        return createNode({
-          type: 'IdentifierExpression',
-          value: (current as Token<TT.ID>).value,
-        });
-      case TT.LPAREN:
+      case TokenType.NUMBER:
+        return new NumberExpression((current as Token<TokenType.NUMBER>).value);
+      case TokenType.STRING:
+        return new StringExpression((current as Token<TokenType.STRING>).value);
+      case TokenType.BOOLEAN:
+        return new BooleanExpression(
+          (current as Token<TokenType.BOOLEAN>).value
+        );
+      case TokenType.ID:
+        return new IdentifierExpression((current as Token<TokenType.ID>).value);
+      case TokenType.LPAREN:
         const expression = this.expression();
-        this.consume(TT.RPAREN);
+        this.consume(TokenType.RPAREN);
         return expression;
       default:
         throw new Error('Incorrect expression ' + current.type);
