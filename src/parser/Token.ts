@@ -9,10 +9,12 @@ export default class Token {
 
 export enum Tokens {
   NUMBER = 'NUMBER',
-  BOOLEAN = 'BOOLEAN',
   STRING = 'STRING',
   ID = 'ID',
   EOF = 'EOF',
+
+  TRUE = 'true',
+  FALSE = 'false',
 
   PLUS = '+',
   MINUS = '-',
@@ -69,11 +71,9 @@ export function getPrecedence(token: string): number {
   }
 }
 
-export const KEYWORDS: {
-  [c: string]: Tokens | [Tokens, number | string | boolean];
-} = {
-  let: Tokens.LET,
-  if: Tokens.IF,
-  true: [Tokens.BOOLEAN, true],
-  false: [Tokens.BOOLEAN, false],
-};
+export const KEYWORDS: Array<string> = [
+  Tokens.TRUE,
+  Tokens.FALSE,
+  Tokens.IF,
+  Tokens.LET,
+];

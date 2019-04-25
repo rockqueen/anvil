@@ -52,8 +52,9 @@ class ExpressionParser extends BaseParser {
         return new NumberExpression(current.value as number);
       case Tokens.STRING:
         return new StringExpression(current.value as string);
-      case Tokens.BOOLEAN:
-        return new BooleanExpression(current.value as boolean);
+      case Tokens.TRUE:
+      case Tokens.FALSE:
+        return new BooleanExpression(current.type === Tokens.TRUE);
       case Tokens.ID:
         return new IdentifierExpression(current.value as string);
       case Tokens.LPAREN:

@@ -110,11 +110,8 @@ class Lexer {
       word += current;
       current = this.next();
     }
-    if (word in KEYWORDS) {
-      const keyword = KEYWORDS[word];
-      const type = Array.isArray(keyword) ? keyword[0] : keyword;
-      const value = Array.isArray(keyword) ? keyword[1] : null;
-      this.addToken(type, value);
+    if (KEYWORDS.indexOf(word) > -1) {
+      this.addToken(word, null);
     } else {
       this.addToken(Tokens.ID, word);
     }
