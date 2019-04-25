@@ -1,89 +1,79 @@
-export function createToken<T extends TokenType>(
-  type: T,
-  value: TokenValue<T>,
-  start: number,
-  end: number
-): Token<T> {
-  return {type, value, start, end};
+export default class Token {
+  constructor(
+    readonly type: string,
+    readonly value: number | string | boolean | null,
+    readonly start: number,
+    readonly end: number
+  ) {}
 }
 
-export type Token<T extends TokenType = TokenType> = Readonly<{
-  type: T;
-  value: TokenValue<T>;
-  start: number;
-  end: number;
-}>;
+export enum Tokens {
+  NUMBER = 'NUMBER',
+  BOOLEAN = 'BOOLEAN',
+  STRING = 'STRING',
+  ID = 'ID',
+  EOF = 'EOF',
 
-export const enum TokenType {
-  // Types
-  NUMBER = 'number',
-  BOOLEAN = 'boolean',
-  STRING = 'string',
-  ID = 'id',
-  // Arithmetical perators
-  PLUS = 'plus',
-  MINUS = 'minus',
-  STAR = 'star',
-  SLASH = 'slash',
-  EQ = 'eq',
-  POW = 'pow',
-  PERCENT = 'percent',
-  SLASHSLASH = 'slashslash',
-  // Conditional operatos
-  LT = 'lt',
-  LTEQ = 'lteq',
-  GT = 'gt',
-  GTEQ = 'gteq',
-  EQEQ = 'eqeq',
-  // Parentheses
-  LPAREN = 'lparent',
-  RPAREN = 'rparen',
-  LBRACE = 'lbrace',
-  RBRACE = 'rbrace',
-  // Keywords
+  PLUS = '+',
+  MINUS = '-',
+  STAR = '*',
+  SLASH = '/',
+  EQ = '=',
+  POW = '**',
+  PERCENT = '%',
+  SLASHSLASH = '//',
+
+  LT = '>',
+  LTEQ = '>=',
+  GT = '<',
+  GTEQ = '<=',
+  EQEQ = '==',
+
+  LPAREN = '(',
+  RPAREN = ')',
+  LBRACE = '{',
+  RBRACE = '}',
+
   LET = 'let',
   IF = 'if',
-  // EOF
-  EOF = 'eof',
 }
 
 // prettier-ignore
-export type TokenValue<T> = 
-  T extends TokenType.NUMBER ? number :
-  T extends TokenType.BOOLEAN ? boolean :
-  T extends (TokenType.STRING | TokenType.ID) ? string :
-  null;
+export const OPERATORS: Array<string> = [
+  Tokens.PLUS, Tokens.MINUS, Tokens.STAR, Tokens.SLASH, 
+  Tokens.EQ, Tokens.POW, Tokens.PERCENT, Tokens.SLASHSLASH,
+  Tokens.LT, Tokens.LTEQ, Tokens.GT, Tokens.GTEQ, Tokens.EQEQ,
+  Tokens.LPAREN, Tokens.RPAREN, Tokens.LBRACE, Tokens.RBRACE
+]
 
-export const OPERATORS: {[c: string]: TokenType} = {
-  '+': TokenType.PLUS,
-  '-': TokenType.MINUS,
-  '*': TokenType.STAR,
-  '/': TokenType.SLASH,
-  '=': TokenType.EQ,
-  '**': TokenType.POW,
-  '%': TokenType.PERCENT,
-  '//': TokenType.SLASHSLASH,
-  '<': TokenType.LT,
-  '<=': TokenType.LTEQ,
-  '>': TokenType.GT,
-  '>=': TokenType.GTEQ,
-  '==': TokenType.EQEQ,
-  '(': TokenType.LPAREN,
-  ')': TokenType.RPAREN,
-  '{': TokenType.LBRACE,
-  '}': TokenType.RBRACE,
-};
-
-export const OPERATOR_TOKENS: {[t: string]: string} = {};
-for (const char in OPERATORS) {
-  OPERATOR_TOKENS[OPERATORS[char]] = char;
+export function getPrecedence(token: string): number {
+  switch (token) {
+    case Tokens.LT:
+    case Tokens.LTEQ:
+    case Tokens.GT:
+    case Tokens.GTEQ:
+    case Tokens.EQEQ:
+      return 1;
+    case Tokens.PLUS:
+    case Tokens.MINUS:
+      return 2;
+    case Tokens.STAR:
+    case Tokens.SLASH:
+    case Tokens.SLASHSLASH:
+    case Tokens.PERCENT:
+      return 3;
+    case Tokens.POW:
+      return 4;
+    default:
+      return 0;
+  }
 }
 
 export const KEYWORDS: {
-  [c: string]: TokenType | [TokenType, number | string | boolean];
+  [c: string]: Tokens | [Tokens, number | string | boolean];
 } = {
-  let: TokenType.LET,
-  if: TokenType.IF,
-  true: [TokenType.BOOLEAN, true],
-  false: [TokenType.BOOLEAN, false],
+  let: Tokens.LET,
+  if: Tokens.IF,
+  true: [Tokens.BOOLEAN, true],
+  false: [Tokens.BOOLEAN, false],
 };

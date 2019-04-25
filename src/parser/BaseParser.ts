@@ -1,4 +1,4 @@
-import {Token, TokenType} from './Token';
+import Token, {Tokens} from './Token';
 
 class BaseParser {
   private readonly tokens: ReadonlyArray<Token>;
@@ -21,7 +21,7 @@ class BaseParser {
     return this.get();
   }
 
-  protected match(type: TokenType): boolean {
+  protected match(type: Tokens): boolean {
     const current = this.get();
     if (current.type === type) {
       this.next();
@@ -30,11 +30,11 @@ class BaseParser {
     return false;
   }
 
-  protected consume<T extends TokenType>(type: T): Token<T> {
+  protected consume(type: Tokens): Token {
     const current = this.get();
     if (current.type === type) {
       this.pos++;
-      return current as Token<T>;
+      return current;
     }
     throw new Error('No expected token');
   }

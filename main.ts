@@ -1,12 +1,15 @@
 import Lexer from './src/parser/Lexer';
-import Parser from './src/parser/Parser';
+import StatementParser from './src/parser/StatementParser';
 
 const tokens = new Lexer(`
-  let x = 1 * 2 / (9 - 0)
-  let y = 1 * x
-  let z = z - -x
+  
+  if x > 2 {
+    let x = 2
+  }
+
 `).tokenize();
 
-const ast = new Parser(tokens).parse();
+console.log(tokens);
 
+const ast = new StatementParser(tokens).parse();
 console.log(JSON.stringify(ast, null, 2));

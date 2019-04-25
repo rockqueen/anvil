@@ -1,45 +1,19 @@
 import BaseParser from './BaseParser';
-import {Token, TokenType, OPERATOR_TOKENS} from './Token';
+import {Tokens, getPrecedence} from './Token';
 import {
   Expression,
-  BinaryExpression,
-  UnaryExpression,
   NumberExpression,
   StringExpression,
   BooleanExpression,
   IdentifierExpression,
+  UnaryExpression,
+  BinaryExpression,
 } from '../ast/Expression';
-
-function getPrecedence(token: TokenType): number {
-  switch (token) {
-    case TokenType.LT:
-    case TokenType.LTEQ:
-    case TokenType.GT:
-    case TokenType.GTEQ:
-    case TokenType.EQEQ:
-      return 1;
-    case TokenType.PLUS:
-    case TokenType.MINUS:
-      return 2;
-    case TokenType.STAR:
-    case TokenType.SLASH:
-    case TokenType.SLASHSLASH:
-    case TokenType.PERCENT:
-      return 3;
-    case TokenType.POW:
-      return 4;
-    default:
-      return 0;
-  }
-}
 
 class ExpressionParser extends BaseParser {
   protected identifier(): IdentifierExpression {
-    const current = this.get();
-    if (current.type === TokenType.ID) {
-      return <IdentifierExpression>this.primary();
-    }
-    throw new Error('No identifier');
+    const token = this.consume(Tokens.ID);
+    return new IdentifierExpression(token.value as string);
   }
 
   protected expression(): Expression {
@@ -47,27 +21,25 @@ class ExpressionParser extends BaseParser {
   }
 
   private binaryExpression(prec: number = 1) {
-    let result = this.unaryExpression();
+    let x = this.unaryExpression();
     while (true) {
       const token = this.get();
-      const tprec = getPrecedence(token.type);
-      if (tprec < prec) {
-        return result;
+      const tokenPrec = getPrecedence(token.type);
+      if (tokenPrec < prec) {
+        return x;
       }
       this.next();
-      result = new BinaryExpression(
-        OPERATOR_TOKENS[token.type],
-        result,
-        this.binaryExpression(tprec + 1)
-      );
+      const y = this.binaryExpression(tokenPrec + 1);
+      x = new BinaryExpression(token.type, x, y);
     }
   }
 
   private unaryExpression() {
     const current = this.get();
-    if (current.type === TokenType.MINUS) {
-      this.next();
-      return new UnaryExpression('-', this.primary());
+    switch (current.type) {
+      case Tokens.MINUS:
+        this.next();
+        return new UnaryExpression('-', this.primary());
     }
     return this.primary();
   }
@@ -76,19 +48,17 @@ class ExpressionParser extends BaseParser {
     const current = this.get();
     this.next();
     switch (current.type) {
-      case TokenType.NUMBER:
-        return new NumberExpression((current as Token<TokenType.NUMBER>).value);
-      case TokenType.STRING:
-        return new StringExpression((current as Token<TokenType.STRING>).value);
-      case TokenType.BOOLEAN:
-        return new BooleanExpression(
-          (current as Token<TokenType.BOOLEAN>).value
-        );
-      case TokenType.ID:
-        return new IdentifierExpression((current as Token<TokenType.ID>).value);
-      case TokenType.LPAREN:
+      case Tokens.NUMBER:
+        return new NumberExpression(current.value as number);
+      case Tokens.STRING:
+        return new StringExpression(current.value as string);
+      case Tokens.BOOLEAN:
+        return new BooleanExpression(current.value as boolean);
+      case Tokens.ID:
+        return new IdentifierExpression(current.value as string);
+      case Tokens.LPAREN:
         const expression = this.expression();
-        this.consume(TokenType.RPAREN);
+        this.consume(Tokens.RPAREN);
         return expression;
       default:
         throw new Error('Incorrect expression ' + current.type);

@@ -1,13 +1,6 @@
-import {
-  Token,
-  TokenType,
-  TokenValue,
-  createToken,
-  OPERATORS,
-  KEYWORDS,
-} from './Token';
+import Token, {Tokens, OPERATORS, KEYWORDS} from './Token';
 
-const OPERATORS_CHARS = new Set(Object.keys(OPERATORS).join(''));
+const OPERATORS_CHARS = new Set(OPERATORS);
 
 function isDigit(c: string, base: number = 10): boolean {
   const parsed = parseInt(c, base);
@@ -42,8 +35,8 @@ class Lexer {
     return this.peek();
   }
 
-  private addToken<T extends TokenType>(type: T, value: TokenValue<T>) {
-    this.tokens.push(createToken(type, value, this.start, this.pos));
+  private addToken(type: string, value: any) {
+    this.tokens.push(new Token(type, value, this.start, this.pos));
   }
 
   public tokenize(): Array<Token> {
@@ -62,7 +55,7 @@ class Lexer {
         this.next();
       }
     }
-    this.addToken(TokenType.EOF, null);
+    this.addToken(Tokens.EOF, null);
     return this.tokens;
   }
 
@@ -86,17 +79,17 @@ class Lexer {
       }
       value = parseFloat(buffer);
     }
-    this.addToken(TokenType.NUMBER, value);
+    this.addToken(Tokens.NUMBER, value);
   }
 
   private tokenizeOperator() {
     let operator = '';
     let current = this.peek();
-    while (OPERATORS[operator + current] && current) {
+    while (OPERATORS.indexOf(operator + current) > -1 && current) {
       operator += current;
       current = this.next();
     }
-    this.addToken(OPERATORS[operator], null);
+    this.addToken(operator, null);
   }
 
   private tokenizeString() {
@@ -106,7 +99,7 @@ class Lexer {
       value += current;
       current = this.next();
     }
-    this.addToken(TokenType.STRING, value);
+    this.addToken(Tokens.STRING, value);
     this.next();
   }
 
@@ -123,7 +116,7 @@ class Lexer {
       const value = Array.isArray(keyword) ? keyword[1] : null;
       this.addToken(type, value);
     } else {
-      this.addToken(TokenType.ID, word);
+      this.addToken(Tokens.ID, word);
     }
   }
 }

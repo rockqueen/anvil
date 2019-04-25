@@ -15,3 +15,9 @@ export class AssignStatement extends Statement {
     super('AssignExpression');
   }
 }
+
+export class IfStatement extends Statement {
+  constructor(readonly condition: Expression, readonly body: BlockStatement) {
+    super('IfStatement');
+  }
+}
