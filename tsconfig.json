@@ -2,9 +2,19 @@
   "compilerOptions": {
     "strict": true,
     "noImplicitAny": true,
-    "target": "esnext",
-    "moduleResolution": "node",
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+
     "esModuleInterop": true,
-    "lib": ["esnext"]
-  }
+    "moduleResolution": "node",
+    "lib": ["esnext"],
+    "types": ["node", "jest"],
+
+    "target": "esnext",
+    "module": "commonjs",
+    "outDir": "./bin"
+  },
+
+  "include": ["./src/**/*.ts"]
 }
