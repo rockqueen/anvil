@@ -1,8 +1,5 @@
-type UnaryOperator = '+' | '-';
-type BinaryOperator = '+' | '-';
-
 export abstract class Expression {
-  constructor(public readonly type: string) {}
+  constructor(readonly type: string) {}
 }
 
 export class NumberExpression extends Expression {
@@ -30,17 +27,14 @@ export class IdentifierExpression extends Expression {
 }
 
 export class UnaryExpression extends Expression {
-  constructor(
-    readonly operator: string, // TODO: strict type
-    readonly value: Expression
-  ) {
+  constructor(readonly operator: string, readonly value: Expression) {
     super('UnaryExpression');
   }
 }
 
 export class BinaryExpression extends Expression {
   constructor(
-    readonly operator: string, // TODO: strict type
+    readonly operator: string,
     readonly left: Expression,
     readonly right: Expression
   ) {

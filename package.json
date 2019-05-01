@@ -6,9 +6,11 @@
   "scripts": {
     "test": "jest",
     "test:w": "jest --watchAll",
-    "build": "tsc"
+    "build": "tsc",
+    "compile": "ts-node ./src/runner.ts ./test/input.anvil"
   },
   "dependencies": {
+    "chalk": "^2.4.2",
     "commander": "^2.20.0"
   },
   "devDependencies": {

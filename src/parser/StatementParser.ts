@@ -27,7 +27,7 @@ class StatementParser extends ExpressionParser {
     if (this.match(Tokens.IF)) {
       return this.ifStatement();
     }
-    throw new Error(`Unknown statement`);
+    throw new Error(`'${this.get().type}' is incorrect for statement`);
   }
 
   private assignStatement(): AssignStatement {

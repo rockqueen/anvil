@@ -39,7 +39,9 @@ class ExpressionParser extends BaseParser {
     switch (current.type) {
       case Tokens.MINUS:
         this.next();
-        return new UnaryExpression('-', this.primary());
+        return new UnaryExpression(Tokens.MINUS, this.primary());
+      case Tokens.PLUS:
+        this.next();
     }
     return this.primary();
   }
@@ -62,7 +64,7 @@ class ExpressionParser extends BaseParser {
         this.consume(Tokens.RPAREN);
         return expression;
       default:
-        throw new Error('Incorrect expression ' + current.type);
+        throw new Error(`'${current.type}' is incorrect for expression`);
     }
   }
 }

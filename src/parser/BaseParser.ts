@@ -36,7 +36,7 @@ class BaseParser {
       this.pos++;
       return current;
     }
-    throw new Error('No expected token');
+    throw new Error(`'${type}' expected, but got ${current.type}`);
   }
 }
 
