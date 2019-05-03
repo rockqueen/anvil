@@ -21,13 +21,16 @@ class StatementParser extends ExpressionParser {
   }
 
   private statement() {
-    if (this.match(Tokens.LET)) {
-      return this.assignStatement();
+    const token = this.get();
+    switch (token.type) {
+      case Tokens.IF:
+        this.next();
+        return this.ifStatement();
+      case Tokens.LET:
+        this.next();
+      default:
+        return this.assignStatement();
     }
-    if (this.match(Tokens.IF)) {
-      return this.ifStatement();
-    }
-    throw new Error(`'${this.get().type}' is incorrect for statement`);
   }
 
   private assignStatement(): AssignStatement {
@@ -37,7 +40,7 @@ class StatementParser extends ExpressionParser {
     return new AssignStatement(id, value);
   }
 
-  private ifStatement() {
+  private ifStatement(): IfStatement {
     const condition = this.expression();
     this.consume(Tokens.LBRACE);
     const body = this.blockStatement(Tokens.RBRACE);

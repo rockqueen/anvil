@@ -12,7 +12,7 @@ export class BlockStatement extends Statement {
 
 export class AssignStatement extends Statement {
   constructor(readonly id: IdentifierExpression, readonly value: Expression) {
-    super('AssignExpression');
+    super('AssignStatement');
   }
 }
 
